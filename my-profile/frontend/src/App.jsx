@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import "./index.css";
 
-// Supabase client
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_KEY
@@ -12,7 +12,6 @@ export default function App() {
   const [form, setForm] = useState({ name: "", message: "" });
   const [loading, setLoading] = useState(false);
 
-  // Load all guestbook entries
   const load = async () => {
     try {
       setLoading(true);
@@ -33,7 +32,6 @@ export default function App() {
     load();
   }, []);
 
-  // Save new entry
   const save = async (e) => {
     e.preventDefault();
     try {
@@ -42,12 +40,12 @@ export default function App() {
       setForm({ name: "", message: "" });
       load();
     } catch (err) {
-      console.error("Error saving entry:", err);
+      alert("Error saving message!");
     }
   };
 
-  // Delete an entry
   const remove = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
     try {
       const { error } = await supabase.from("guestbook").delete().eq("id", id);
       if (error) throw error;
@@ -58,95 +56,61 @@ export default function App() {
   };
 
   return (
-    <div style={styles.container}>
-      <h1>My Profile & Guestbook</h1>
+    <div className="container">
+      <header className="profile-header">
+        <h1>Welcome to My Portolio</h1>
+        <p>I'm a developer building cool things with React and Supabase.</p>
+      </header>
 
-      {/* Guestbook Form */}
-      <form onSubmit={save} style={styles.form}>
-        <input
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-          style={styles.input}
-        />
-        <textarea
-          placeholder="Message"
-          value={form.message}
-          onChange={(e) => setForm({ ...form, message: e.target.value })}
-          required
-          style={styles.textarea}
-        />
-        <button type="submit" style={styles.button}>
-          Sign Guestbook
-        </button>
-      </form>
-
-      <hr />
-
-      {loading && <p>Loading entries...</p>}
-      {!loading && entries.length === 0 && <p>No entries yet.</p>}
-
-      {/* Guestbook Entries */}
-      {entries.map((entry) => (
-        <div key={entry.id} style={styles.card}>
-          <p>
-            <strong>{entry.name}</strong> (
-            {new Date(entry.created_at).toLocaleString()})
-          </p>
-          <p>{entry.message}</p>
-          <button
-            onClick={() => remove(entry.id)}
-            style={styles.deleteButton}
-          >
-            Delete
+      <main className="guestbook-section">
+        <h2>Guestbook</h2>
+        <p className="text-muted">Leave a message below to say hello!</p>
+        
+        <form onSubmit={save} className="guestbook-form">
+          <input
+            placeholder="Your Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+          />
+          <textarea
+            placeholder="Write something nice..."
+            value={form.message}
+            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            required
+            rows="4"
+          />
+          <button type="submit" className="btn-submit">
+            Post Message
           </button>
+        </form>
+
+        <div className="entries-list">
+          {loading ? (
+            <div className="loading-spinner">Fetching messages...</div>
+          ) : entries.length === 0 ? (
+            <p className="text-muted">No messages yet. Be the first!</p>
+          ) : (
+            entries.map((entry) => (
+              <div key={entry.id} className="entry-card">
+                <div className="entry-header">
+                  <span className="entry-name">{entry.name}</span>
+                  <span className="entry-date">
+                    {new Date(entry.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="entry-message">{entry.message}</p>
+                <button
+                  onClick={() => remove(entry.id)}
+                  className="btn-delete"
+                >
+                  Delete Message
+                </button>
+              </div>
+            ))
+          )}
         </div>
-      ))}
+      </main>
     </div>
   );
 }
-
-// Simple styles for clean layout
-const styles = {
-  container: {
-    maxWidth: "600px",
-    margin: "auto",
-    padding: "2rem",
-    fontFamily: "Arial, sans-serif",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    marginBottom: "1rem",
-  },
-  input: {
-    padding: "8px",
-    fontSize: "14px",
-  },
-  textarea: {
-    padding: "8px",
-    fontSize: "14px",
-    minHeight: "80px",
-  },
-  button: {
-    padding: "10px",
-    cursor: "pointer",
-  },
-  card: {
-    border: "1px solid #ddd",
-    padding: "10px",
-    marginTop: "10px",
-    borderRadius: "5px",
-  },
-  deleteButton: {
-    marginTop: "5px",
-    padding: "5px",
-    cursor: "pointer",
-    backgroundColor: "#ff4d4f",
-    color: "#fff",
-    border: "none",
-    borderRadius: "3px",
-  },
-};
