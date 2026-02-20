@@ -58,17 +58,17 @@ export default function App() {
   return (
     <div className="container">
       <header className="profile-header">
-        <h1>Welcome to My Portolio</h1>
-        <p>I'm a developer building cool things with React and Supabase.</p>
+        <h1>Wilkam!</h1>
+        <p>Is this working...?</p>
       </header>
 
       <main className="guestbook-section">
         <h2>Guestbook</h2>
-        <p className="text-muted">Leave a message below to say hello!</p>
+        <p className="text-muted">Leave your name and a message below</p>
         
         <form onSubmit={save} className="guestbook-form">
           <input
-            placeholder="Your Name"
+            placeholder="Name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
