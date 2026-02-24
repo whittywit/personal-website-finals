@@ -1,137 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=JetBrains+Mono:wght@300;500&display=swap');
+
 :root {
-  --primary: #99984d;
-  --primary-hover: #7a7931;
-  --bg: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --danger: #ef4444;
-  --border: #e2e8f0;
+  --ink-black: #1a1a1a;
+  --paper-white: #fdfdfd;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg);
-  color: var(--text-main);
-  line-height: 1.5;
+  background-color: #f0f0f0;
+  background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+  color: var(--ink-black);
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.container {
-  max-width: 800px;
+/* --- Video Uncrumple Overlay --- */
+.video-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  cursor: pointer;
+}
+
+.uncrumple-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.uncrumple-prompt {
+  position: absolute;
+  z-index: 3001;
+  background: white;
+  padding: 15px 30px;
+  border: 2px solid var(--ink-black);
+  box-shadow: 5px 5px 0px var(--ink-black);
+}
+
+.uncrumple-text {
+  font-family: 'Architects Daughter', cursive;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+/* --- Notebook Layout --- */
+.notebook-container {
+  max-width: 850px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
 
-/* Header/Profile Section */
-.profile-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem;
-  background: var(--card-bg);
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.paper-sheet {
+  background-color: var(--paper-white);
+  background-image: 
+    url("https://www.transparenttextures.com/patterns/cream-paper.png"),
+    linear-gradient(90deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px),
+    linear-gradient(#eee .1em, transparent .1em);
+  background-size: 100% 100%, 100% 100%, 100% 1.5em;
+  padding: 3rem;
+  min-height: 80vh;
+  box-shadow: 2px 2px 15px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
 }
 
-.profile-header h1 {
-  margin: 0;
-  font-size: 2.5rem;
-  color: var(--primary);
+/* Media Player */
+.mini-player {
+  position: fixed;
+  bottom: 20px; left: 20px;
+  background: white;
+  border: 2px solid var(--ink-black);
+  padding: 12px;
+  width: 200px;
+  z-index: 1000;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
 }
 
-/* Form Styles */
-.guestbook-section {
-  background: var(--card-bg);
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+.player-track-info { font-family: 'Architects Daughter', cursive; font-size: 0.75rem; margin-bottom: 8px; }
+.player-controls { display: flex; gap: 8px; margin-bottom: 8px; }
+.ink-btn-sm { flex: 1; background: white; border: 1px solid black; font-size: 0.6rem; cursor: pointer; }
 
-.guestbook-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
+.volume-slider { display: flex; align-items: center; gap: 10px; font-size: 0.6rem; }
+.volume-slider input { flex: 1; accent-color: var(--ink-black); }
 
-input, textarea {
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  ring: 2px solid var(--primary);
-}
-
-.btn-submit {
-  background-color: var(--primary);
-  color: white;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
+/* Tabs & Content */
+.notebook-nav { display: flex; gap: 5px; margin-left: 20px; }
+.nav-link {
+  background: var(--paper-white);
+  border: 1px solid #ccc;
+  border-bottom: none;
+  padding: 8px 15px;
+  font-family: 'Architects Daughter', cursive;
   cursor: pointer;
-  transition: background 0.2s;
+  opacity: 0.5;
 }
+.nav-link.active { opacity: 1; border-color: var(--ink-black); z-index: 2; border-bottom: none; }
 
-.btn-submit:hover {
-  background-color: var(--primary-hover);
-}
+h1 { font-family: 'Architects Daughter', cursive; font-size: 2.2rem; margin: 0; }
+.subtitle { font-size: 0.8rem; border-bottom: 1px solid var(--ink-black); margin-bottom: 2rem; display: inline-block; }
+.sketch-title { border-bottom: 2px solid var(--ink-black); font-family: 'Architects Daughter', cursive; margin: 2rem 0 1rem 0; }
+.sketch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.polaroid-frame { background: white; border: 1px solid var(--ink-black); padding: 8px 8px 25px 8px; transform: rotate(-1deg); }
+.sketch-img { width: 100%; height: 200px; object-fit: cover; filter: grayscale(100%); }
+.caption { font-family: 'Architects Daughter', cursive; text-align: center; font-size: 0.8rem; margin-top: 5px; }
 
-/* Entry Cards */
-.entries-list {
-  margin-top: 2rem;
-}
+.fade-in { animation: pageFade 0.6s ease-out; }
+@keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
 
-.entry-card {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  margin-bottom: 1rem;
-  position: relative;
-}
-
-.entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.entry-name {
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.entry-date {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.entry-message {
-  color: var(--text-main);
-  white-space: pre-wrap;
-}
-
-.btn-delete {
-  background: none;
-  border: none;
-  color: var(--danger);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0;
-  margin-top: 0.5rem;
-  text-decoration: underline;
-}
-
-.loading-spinner {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 2rem;
-}
+.ink-form { display: flex; flex-direction: column; gap: 1rem; }
+.ink-form input, .ink-form textarea { background: transparent; border: none; border-bottom: 1px solid black; padding: 10px; font-family: inherit; outline: none; }
+.ink-btn { background: white; border: 2px solid black; padding: 10px; font-family: 'Architects Daughter', cursive; cursor: pointer; }
+.post-it { border-left: 3px solid var(--ink-black); padding: 0.8rem; margin-bottom: 1rem; background: rgba(0,0,0,0.02); }
