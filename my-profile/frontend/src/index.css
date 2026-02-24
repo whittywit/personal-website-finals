@@ -13,6 +13,25 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* --- Vignette with Fade-In --- */
+.vignette-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0; /* Start invisible */
+  animation: vignetteFadeIn 3s ease-out forwards; /* Fade in over 3 seconds */
+}
+
+@keyframes vignetteFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* --- Video Uncrumple Overlay --- */
 .video-overlay {
   position: fixed;
@@ -64,9 +83,21 @@ body {
   min-height: 80vh;
   box-shadow: 2px 2px 15px rgba(0,0,0,0.1);
   border: 1px solid #ddd;
+  position: relative;
+  z-index: 10;
 }
 
-/* Media Player */
+.playback-container { margin: 5px 0 10px 0; }
+.seek-bar {
+  width: 100%; height: 4px; cursor: pointer;
+  accent-color: var(--ink-black); background: #eee; border-radius: 2px;
+}
+.time-stamps {
+  display: flex; justify-content: space-between;
+  font-size: 0.55rem; font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px; color: #666;
+}
+
 .mini-player {
   position: fixed;
   bottom: 20px; left: 20px;
@@ -81,7 +112,6 @@ body {
 .player-track-info { font-family: 'Architects Daughter', cursive; font-size: 0.75rem; margin-bottom: 8px; }
 .player-controls { display: flex; gap: 8px; margin-bottom: 8px; }
 .ink-btn-sm { flex: 1; background: white; border: 1px solid black; font-size: 0.6rem; cursor: pointer; }
-
 .volume-slider { display: flex; align-items: center; gap: 10px; font-size: 0.6rem; }
 .volume-slider input { flex: 1; accent-color: var(--ink-black); }
 
@@ -102,10 +132,18 @@ h1 { font-family: 'Architects Daughter', cursive; font-size: 2.2rem; margin: 0; 
 .subtitle { font-size: 0.8rem; border-bottom: 1px solid var(--ink-black); margin-bottom: 2rem; display: inline-block; }
 .sketch-title { border-bottom: 2px solid var(--ink-black); font-family: 'Architects Daughter', cursive; margin: 2rem 0 1rem 0; }
 .sketch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.polaroid-frame { background: white; border: 1px solid var(--ink-black); padding: 8px 8px 25px 8px; transform: rotate(-1deg); }
-.sketch-img { width: 100%; height: 200px; object-fit: cover; filter: grayscale(100%); }
-.caption { font-family: 'Architects Daughter', cursive; text-align: center; font-size: 0.8rem; margin-top: 5px; }
+.polaroid-frame { background: white; border: 1px solid var(--ink-black); padding: 8px 8px 25px 8px; transform: rotate(-1deg); transition: transform 0.3s ease; }
+.polaroid-frame:hover { transform: rotate(0deg) translateY(-5px); }
 
+/* --- Saturation Hover Effect --- */
+.sketch-img { 
+  width: 100%; height: 200px; object-fit: cover; 
+  filter: grayscale(100%) saturate(0); 
+  transition: filter 0.5s ease; 
+}
+.sketch-img:hover { filter: grayscale(0%) saturate(2); }
+
+.caption { font-family: 'Architects Daughter', cursive; text-align: center; font-size: 0.8rem; margin-top: 5px; display: block; }
 .fade-in { animation: pageFade 0.6s ease-out; }
 @keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
 

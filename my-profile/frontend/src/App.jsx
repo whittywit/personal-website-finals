@@ -17,13 +17,16 @@ export default function App() {
   // --- Animation & Audio State ---
   const [appStage, setAppStage] = useState("CRUMPLED"); 
   const [currentTrack, setCurrentTrack] = useState(0); 
-  const [volume, setVolume] = useState(0.1); // Initial 10%
+  const [volume, setVolume] = useState(0.1); 
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  
   const audioRef = useRef(null);
   const videoRef = useRef(null);
 
   const playlist = [
-    { name: "Who knows by Daniel Caesar - Track", src: "/daniel_caesar_song.mp3" },
-    { name: "Heavy by The Marías - Track", src: "/marias_song.mp3" }
+    { name: "Who knows by Daniel Caesar", src: "/daniel_caesar_song.mp3" },
+    { name: "Echo by The Marías", src: "/marias_song.mp3" }
   ];
 
   const GALLERY = [
@@ -32,28 +35,50 @@ export default function App() {
     { category: "ANIME", items: [{ name: "L", img: "/L.jpg" }, { name: "FMAB", img: "/fmab.webp" }] }
   ];
 
-  // --- Music Auto-Play Logic ---
-  // This effect ensures that when currentTrack changes (via Next), it plays automatically
+  // --- Audio Logic ---
+  // Persistent Audio Control
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // Handle track switching without restarting the whole app
   useEffect(() => {
     if (appStage === "READY" && audioRef.current) {
       audioRef.current.play().catch(e => console.log("Playback interrupted:", e));
     }
-  }, [currentTrack, appStage]);
+  }, [currentTrack]);
 
-  // Sync volume slider
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
+  const handleTimeUpdate = () => {
+    if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+  };
 
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) setDuration(audioRef.current.duration);
+  };
+
+  const handleSeek = (e) => {
+    const time = parseFloat(e.target.value);
+    audioRef.current.currentTime = time;
+    setCurrentTime(time);
+  };
+
+  const formatTime = (time) => {
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // --- Handlers ---
   const handleUncrumple = () => {
     setAppStage("UNCRUMPLING");
     if (videoRef.current) {
-      videoRef.current.playbackRate = 4.0; 
+      videoRef.current.playbackRate = 5.0; 
       videoRef.current.play();
     }
-    // Set initial volume to 10% and play
+    // Start music once here
     if (audioRef.current) {
-      audioRef.current.volume = 0.1;
       audioRef.current.play().catch(e => console.error("Audio block:", e));
     }
   };
@@ -81,7 +106,7 @@ export default function App() {
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
-  useEffect(() => { loadEntries(); }, []);
+  useEffect(() => { if (appStage === "READY") loadEntries(); }, [appStage]);
 
   const saveMessage = async (e) => {
     e.preventDefault();
@@ -95,86 +120,111 @@ export default function App() {
     } catch (err) { alert("Error saving note."); } finally { setIsSubmitting(false); }
   };
 
-  if (appStage !== "READY") {
-    return (
-      <div className="video-overlay" onClick={handleUncrumple}>
-        <audio ref={audioRef} src={playlist[currentTrack].src} loop />
-        <video ref={videoRef} src="/crumpled.mp4" onEnded={onVideoEnd} playsInline muted className="uncrumple-video" />
-        {appStage === "CRUMPLED" && (
-           <div className="uncrumple-prompt">
-             <span className="uncrumple-text">UNCRUMPLE</span>
-           </div>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="notebook-container fade-in">
-      <audio ref={audioRef} src={playlist[currentTrack].src} loop />
+    <div className="app-main-wrapper">
+      {/* PERSISTENT AUDIO: Outside the stage blocks to prevent double-play */}
+      <audio 
+        ref={audioRef} 
+        src={playlist[currentTrack].src} 
+        loop 
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+      />
 
-      <div className="mini-player">
-        <div className="player-track-info">{playlist[currentTrack].name}</div>
-        <div className="player-controls">
-          <button onClick={togglePlay} className="ink-btn-sm">PLAY/PAUSE</button>
-          <button onClick={switchTrack} className="ink-btn-sm">NEXT</button>
+      {appStage !== "READY" ? (
+        <div className="video-overlay" onClick={handleUncrumple}>
+          <video ref={videoRef} src="/crumpled.mp4" onEnded={onVideoEnd} playsInline muted className="uncrumple-video" />
+          {appStage === "CRUMPLED" && (
+             <div className="uncrumple-prompt">
+               <span className="uncrumple-text">UNCRUMPLE</span>
+             </div>
+          )}
         </div>
-        <div className="volume-slider">
-          <span>VOL:</span>
-          <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(e.target.value)} />
-        </div>
-      </div>
+      ) : (
+        <div className="notebook-container fade-in">
+          {/* Vignette with CSS fade-in animation */}
+          <div className="vignette-overlay"></div>
 
-      <nav className="notebook-nav">
-        <button className={activeTab === "profile" ? "nav-link active" : "nav-link"} onClick={() => setActiveTab("profile")}>p1 Profile</button>
-        <button className={activeTab === "guestbook" ? "nav-link active" : "nav-link"} onClick={() => setActiveTab("guestbook")}>p2 Guestbook</button>
-      </nav>
-
-      <div className="paper-sheet">
-        {activeTab === "profile" ? (
-          <section className="notebook-section">
-            <header className="notebook-header">
-              <h1>Daniel James J. Whitwell</h1>
-              <p className="subtitle">Cyber Security & Forensics | Asia Pacific College</p>
-            </header>
-            <div className="stats-box">
-              <div className="note-entry">
-                <span className="ink-label">Interests: </span>
-                <span className="ink-text">Videogames, Anime, Music</span>
+          <div className="mini-player">
+            <div className="player-track-info">{playlist[currentTrack].name}</div>
+            
+            <div className="playback-container">
+              <input 
+                type="range" 
+                className="seek-bar"
+                min="0" 
+                max={duration || 0} 
+                value={currentTime} 
+                onChange={handleSeek} 
+              />
+              <div className="time-stamps">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
               </div>
-              {GALLERY.map((group) => (
-                <div key={group.category} className="sketch-section">
-                  <h3 className="sketch-title">// {group.category}</h3>
-                  <div className="sketch-grid">
-                    {group.items.map((item) => (
-                      <div key={item.name} className="polaroid-frame">
-                        <img src={item.img} alt={item.name} className="sketch-img" />
-                        <span className="caption">{item.name}</span>
-                      </div>
-                    ))}
+            </div>
+
+            <div className="player-controls">
+              <button onClick={togglePlay} className="ink-btn-sm">PLAY/PAUSE</button>
+              <button onClick={switchTrack} className="ink-btn-sm">NEXT</button>
+            </div>
+            <div className="volume-slider">
+              <span>VOL:</span>
+              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} />
+            </div>
+          </div>
+
+          <nav className="notebook-nav">
+            <button className={activeTab === "profile" ? "nav-link active" : "nav-link"} onClick={() => setActiveTab("profile")}>p1 Profile</button>
+            <button className={activeTab === "guestbook" ? "nav-link active" : "nav-link"} onClick={() => setActiveTab("guestbook")}>p2 Guestbook</button>
+          </nav>
+
+          <div className="paper-sheet">
+            {activeTab === "profile" ? (
+              <section className="notebook-section">
+                <header className="notebook-header">
+                  <h1>Daniel James J. Whitwell</h1>
+                  <p className="subtitle">Cyber Security & Forensics | Asia Pacific College</p>
+                </header>
+                <div className="stats-box">
+                  <div className="note-entry">
+                    <span className="ink-label">Interests: </span>
+                    <span className="ink-text">Videogames, Anime, Music, Football</span>
                   </div>
+                  {GALLERY.map((group) => (
+                    <div key={group.category} className="sketch-section">
+                      <h3 className="sketch-title">// {group.category}</h3>
+                      <div className="sketch-grid">
+                        {group.items.map((item) => (
+                          <div key={item.name} className="polaroid-frame">
+                            <img src={item.img} alt={item.name} className="sketch-img" />
+                            <span className="caption">{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <main className="notebook-section">
-            <h2 className="sketch-title">// GUESTBOOK</h2>
-            <form onSubmit={saveMessage} className="ink-form">
-              <input placeholder="Name/Alias" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-              <textarea placeholder="Leave a note..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} required rows="4" />
-              <button type="submit" className="ink-btn" disabled={isSubmitting}>{isSubmitting ? "Writing..." : "Post Message"}</button>
-            </form>
-            <div className="entry-list">
-              {entries.map((entry) => (
-                <div key={entry.id} className="post-it">
-                  <strong>{entry.name}</strong>: {entry.message}
+              </section>
+            ) : (
+              <main className="notebook-section">
+                <h2 className="sketch-title">// GUESTBOOK</h2>
+                <form onSubmit={saveMessage} className="ink-form">
+                  <input placeholder="Name/Alias" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <textarea placeholder="Leave a note..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} required rows="4" />
+                  <button type="submit" className="ink-btn" disabled={isSubmitting}>{isSubmitting ? "Writing..." : "Post Message"}</button>
+                </form>
+                <div className="entry-list">
+                  {loading ? <p>Reading notes...</p> : entries.map((entry) => (
+                    <div key={entry.id} className="post-it">
+                      <strong>{entry.name}</strong>: {entry.message}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </main>
-        )}
-      </div>
+              </main>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
